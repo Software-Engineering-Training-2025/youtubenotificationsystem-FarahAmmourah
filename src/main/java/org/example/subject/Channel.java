@@ -2,33 +2,42 @@ package org.example.subject;
 
 import org.example.observer.Observer;
 
-public class Channel implements Subject{
-    private final String name;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
-    public Channel(String name) {
-        this.name = name;
-    }
+public class Channel implements Subject {
+    private final String name;
+    private final Set<Observer> subscribers = new HashSet<>();
+
+    public Channel(String name) {this.name = name;}
+
+    public String getName() {return name;}
 
     public void uploadVideo(String title){
-        // TODO: Notify all subscribers about new video
+        Optional.ofNullable(title)
+                .filter(t -> !t.isBlank())
+                .map(t -> name + " uploaded a new video: " + t)
+                .ifPresent(this::notifyObservers);
     }
 
     @Override
     public void subscribe(Observer observer) {
-        // TODO: Add subscriber
+        Optional.ofNullable(observer).ifPresent(subscribers::add);
     }
 
     @Override
     public void unsubscribe(Observer observer) {
-        // TODO: Remove subscriber
+        Optional.ofNullable(observer).ifPresent(subscribers::remove);
     }
 
     @Override
     public void notifyObservers(String message) {
-        // TODO: Notify subscribers
+        subscribers.forEach(o -> o.update(message));
     }
 
-    public String getName() {
-        return name;
+    public Set<Observer> snapshotSubscribers() {
+        return Collections.unmodifiableSet(subscribers);
     }
 }
